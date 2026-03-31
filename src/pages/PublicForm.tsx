@@ -7,8 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Loader2,
-  LockKeyhole,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 
 type FormRecord = any;
@@ -28,23 +27,6 @@ export default function PublicForm() {
     () => fields.find((f) => f.type === 'email'),
     [fields]
   );
-
-  const interactiveFields = useMemo(
-    () =>
-      fields.filter(
-        (f) => !['section_title', 'paragraph_text'].includes(f.type)
-      ),
-    [fields]
-  );
-
-  const answeredCount = useMemo(() => {
-    return interactiveFields.filter((field) => {
-      const value = answers[field.id];
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'boolean') return value === true;
-      return value !== undefined && value !== null && value !== '';
-    }).length;
-  }, [answers, interactiveFields]);
 
   useEffect(() => {
     const loadForm = async () => {
@@ -104,6 +86,8 @@ export default function PublicForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form) return;
+
     setSubmitting(true);
 
     try {
@@ -147,28 +131,18 @@ export default function PublicForm() {
     }
   };
 
-  const shellBg =
-    'min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.10),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.10),_transparent_22%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]';
-
-  const inputClass =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100';
-  const textareaClass =
-    'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 resize-none';
-  const cardClass =
-    'rounded-[28px] border border-slate-200/80 bg-white/95 p-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur';
+  const baseInput =
+    'w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3.5 text-[15px] text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100';
+  const baseTextarea =
+    'w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3.5 text-[15px] text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 resize-none';
 
   const renderField = (field: FieldRecord) => {
     if (field.type === 'section_title') {
       return (
-        <div className="space-y-2">
-          <div className="inline-flex rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700">
-            Section
-          </div>
-          <h3 className="text-xl font-semibold tracking-tight text-slate-900">
-            {field.label}
-          </h3>
+        <div className="pt-2">
+          <h3 className="text-xl font-semibold text-neutral-950">{field.label}</h3>
           {field.help_text && (
-            <p className="text-sm leading-6 text-slate-500">{field.help_text}</p>
+            <p className="mt-2 text-sm leading-6 text-neutral-500">{field.help_text}</p>
           )}
         </div>
       );
@@ -176,7 +150,7 @@ export default function PublicForm() {
 
     if (field.type === 'paragraph_text') {
       return (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+        <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-4 text-sm leading-6 text-neutral-600">
           {field.help_text || field.label}
         </div>
       );
@@ -184,22 +158,23 @@ export default function PublicForm() {
 
     return (
       <>
-        <div className="mb-5">
-          <label className="block text-[15px] font-semibold text-slate-900">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <label className="block text-[15px] font-semibold text-neutral-950">
             {field.label}
             {field.is_required && <span className="ml-1 text-rose-500">*</span>}
           </label>
-          {field.help_text && (
-            <p className="mt-1.5 text-sm leading-6 text-slate-500">{field.help_text}</p>
-          )}
         </div>
+
+        {field.help_text && (
+          <p className="mb-4 text-sm leading-6 text-neutral-500">{field.help_text}</p>
+        )}
 
         {field.type === 'short_text' && (
           <input
             type="text"
             required={field.is_required}
             placeholder={field.placeholder || 'Enter your answer'}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -209,7 +184,7 @@ export default function PublicForm() {
             required={field.is_required}
             rows={5}
             placeholder={field.placeholder || 'Write your answer'}
-            className={textareaClass}
+            className={baseTextarea}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -219,7 +194,7 @@ export default function PublicForm() {
             type="email"
             required={field.is_required}
             placeholder={field.placeholder || 'name@company.com'}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -228,8 +203,8 @@ export default function PublicForm() {
           <input
             type="tel"
             required={field.is_required}
-            placeholder={field.placeholder || '+91 98765 43210'}
-            className={inputClass}
+            placeholder={field.placeholder || 'Phone number'}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -239,7 +214,7 @@ export default function PublicForm() {
             type="url"
             required={field.is_required}
             placeholder={field.placeholder || 'https://example.com'}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -249,7 +224,7 @@ export default function PublicForm() {
             type="number"
             required={field.is_required}
             placeholder={field.placeholder || 'Enter a number'}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -258,7 +233,7 @@ export default function PublicForm() {
           <input
             type="date"
             required={field.is_required}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -267,7 +242,7 @@ export default function PublicForm() {
           <input
             type="time"
             required={field.is_required}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -276,7 +251,7 @@ export default function PublicForm() {
           <input
             type="datetime-local"
             required={field.is_required}
-            className={inputClass}
+            className={baseInput}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
           />
         )}
@@ -286,7 +261,7 @@ export default function PublicForm() {
             <select
               required={field.is_required}
               defaultValue=""
-              className={`${inputClass} appearance-none pr-10`}
+              className={`${baseInput} appearance-none pr-10`}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
             >
               <option value="">Select an option</option>
@@ -296,7 +271,7 @@ export default function PublicForm() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
           </div>
         )}
 
@@ -305,7 +280,7 @@ export default function PublicForm() {
             {(field.form_field_options || []).map((opt: any) => (
               <label
                 key={opt.id}
-                className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 transition hover:border-slate-300 hover:bg-white"
+                className="flex cursor-pointer items-center gap-3 rounded-2xl border border-neutral-300 bg-white px-4 py-3.5 transition hover:border-neutral-400"
               >
                 <input
                   type="radio"
@@ -313,9 +288,9 @@ export default function PublicForm() {
                   required={field.is_required}
                   value={opt.value}
                   onChange={(e) => handleInputChange(field.id, e.target.value)}
-                  className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 border-neutral-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <span className="text-sm font-medium text-slate-700">{opt.label}</span>
+                <span className="text-sm font-medium text-neutral-700">{opt.label}</span>
               </label>
             ))}
           </div>
@@ -326,7 +301,7 @@ export default function PublicForm() {
             {(field.form_field_options || []).map((opt: any) => (
               <label
                 key={opt.id}
-                className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3.5 transition hover:border-slate-300 hover:bg-white"
+                className="flex cursor-pointer items-center gap-3 rounded-2xl border border-neutral-300 bg-white px-4 py-3.5 transition hover:border-neutral-400"
               >
                 <input
                   type="checkbox"
@@ -338,9 +313,9 @@ export default function PublicForm() {
                       : current.filter((v: string) => v !== opt.value);
                     handleInputChange(field.id, newValues);
                   }}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <span className="text-sm font-medium text-slate-700">{opt.label}</span>
+                <span className="text-sm font-medium text-neutral-700">{opt.label}</span>
               </label>
             ))}
           </div>
@@ -358,8 +333,8 @@ export default function PublicForm() {
                   onClick={() => handleInputChange(field.id, value)}
                   className={`h-11 w-11 rounded-2xl border text-sm font-semibold transition ${
                     active
-                      ? 'border-indigo-600 bg-indigo-600 text-white shadow-md'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-emerald-600 bg-emerald-600 text-white'
+                      : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400'
                   }`}
                 >
                   {value}
@@ -370,14 +345,14 @@ export default function PublicForm() {
         )}
 
         {field.type === 'consent_checkbox' && (
-          <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <label className="flex items-start gap-3 rounded-2xl border border-neutral-300 bg-neutral-50 px-4 py-4">
             <input
               type="checkbox"
               required={field.is_required}
               onChange={(e) => handleInputChange(field.id, e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+              className="mt-1 h-4 w-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
             />
-            <span className="text-sm leading-6 text-slate-700">
+            <span className="text-sm leading-6 text-neutral-700">
               {field.help_text || field.label}
             </span>
           </label>
@@ -388,23 +363,13 @@ export default function PublicForm() {
 
   if (loading) {
     return (
-      <div className={`${shellBg} px-4 py-12 sm:px-6 lg:px-8`}>
-        <div className="mx-auto max-w-6xl animate-pulse lg:grid lg:grid-cols-[320px,1fr] lg:gap-8">
-          <div className="hidden rounded-[32px] bg-slate-900/95 p-8 lg:block">
-            <div className="h-6 w-32 rounded bg-white/10" />
-            <div className="mt-8 h-4 w-40 rounded bg-white/10" />
-            <div className="mt-3 h-24 rounded-2xl bg-white/10" />
-          </div>
-          <div className="space-y-5">
-            <div className="rounded-[32px] bg-white p-8 shadow-sm">
-              <div className="h-8 w-1/2 rounded bg-slate-200" />
-              <div className="mt-4 h-4 w-2/3 rounded bg-slate-100" />
-            </div>
-            <div className="rounded-[28px] bg-white p-6 shadow-sm">
-              <div className="h-5 w-1/3 rounded bg-slate-200" />
-              <div className="mt-5 h-12 rounded-2xl bg-slate-100" />
-            </div>
-          </div>
+      <div className="min-h-screen bg-[#f5f5f5] px-4 py-10">
+        <div className="mx-auto max-w-5xl animate-pulse rounded-[28px] border border-neutral-200 bg-white p-8 shadow-sm">
+          <div className="h-8 w-1/3 rounded bg-neutral-200" />
+          <div className="mt-4 h-4 w-2/3 rounded bg-neutral-100" />
+          <div className="mt-8 h-14 rounded-2xl bg-neutral-100" />
+          <div className="mt-4 h-14 rounded-2xl bg-neutral-100" />
+          <div className="mt-4 h-40 rounded-2xl bg-neutral-100" />
         </div>
       </div>
     );
@@ -412,15 +377,13 @@ export default function PublicForm() {
 
   if (error) {
     return (
-      <div className={`${shellBg} flex items-center justify-center px-4 py-12`}>
-        <div className="w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-10 text-center shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
+      <div className="min-h-screen bg-[#f5f5f5] px-4 py-10">
+        <div className="mx-auto max-w-3xl rounded-[28px] border border-neutral-200 bg-white p-10 text-center shadow-sm">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-800">
             <AlertCircle className="h-8 w-8" />
           </div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Form unavailable
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{error}</p>
+          <h2 className="text-2xl font-semibold text-neutral-950">Form unavailable</h2>
+          <p className="mt-3 text-sm leading-6 text-neutral-600">{error}</p>
         </div>
       </div>
     );
@@ -428,145 +391,70 @@ export default function PublicForm() {
 
   if (submitted) {
     return (
-      <div className={`${shellBg} flex items-center justify-center px-4 py-12`}>
-        <div className="w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-10 text-center shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+      <div className="min-h-screen bg-[#f5f5f5] px-4 py-10">
+        <div className="mx-auto max-w-3xl rounded-[28px] border border-neutral-200 bg-white p-10 text-center shadow-sm">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
             <CheckCircle2 className="h-9 w-9" />
           </div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Response submitted
-          </h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="text-2xl font-semibold text-neutral-950">Response submitted</h2>
+          <p className="mt-3 text-sm leading-6 text-neutral-600">
             {form?.success_message || 'Thank you for your submission.'}
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-8 inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-          >
-            Submit another response
-          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`${shellBg} px-4 py-8 sm:px-6 lg:px-8 lg:py-10`}>
-      <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-[320px,1fr] lg:gap-8">
-        <aside className="mb-6 overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-[0_20px_60px_rgba(15,23,42,0.18)] lg:sticky lg:top-8 lg:mb-0 lg:h-fit">
-          <div className="bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-400 p-[1px]">
-            <div className="rounded-t-[32px] bg-slate-950 px-7 py-7">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
-                  <Sparkles className="h-5 w-5 text-indigo-300" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                    Premium form
-                  </p>
-                  <p className="text-sm text-slate-300">Secure response flow</p>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                  Progress
-                </p>
-                <div className="mt-3 flex items-end justify-between gap-3">
-                  <div className="text-3xl font-semibold">
-                    {answeredCount}
-                    <span className="text-base font-medium text-slate-400">
-                      /{interactiveFields.length}
-                    </span>
-                  </div>
-                  <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">
-                    {interactiveFields.length === 0
-                      ? 'Ready'
-                      : `${Math.round((answeredCount / interactiveFields.length) * 100)}%`}
-                  </div>
-                </div>
-
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 transition-all"
-                    style={{
-                      width:
-                        interactiveFields.length === 0
-                          ? '0%'
-                          : `${(answeredCount / interactiveFields.length) * 100}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-5">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 rounded-xl bg-white/10 p-2">
-                    <LockKeyhole className="h-4 w-4 text-cyan-300" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Private and secure</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-300">
-                      Clean submission flow with a more product-style experience.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#f3f3f3] px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl rounded-[30px] border border-neutral-200 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.06)]">
+        <div className="border-b border-neutral-200 px-6 py-8 sm:px-10">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-600">
+            <ShieldCheck className="h-4 w-4" />
+            Secure Form
           </div>
-        </aside>
+          <h1 className="text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
+            {form?.title}
+          </h1>
+          {form?.description && (
+            <p className="mt-4 max-w-3xl text-[15px] leading-7 text-neutral-600">
+              {form.description}
+            </p>
+          )}
+        </div>
 
-        <main>
-          <div className="mb-5 overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-            <div className="h-2 bg-gradient-to-r from-indigo-600 via-violet-600 to-cyan-500" />
-            <div className="p-7 sm:p-10">
-              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Response form
-              </div>
-              <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                {form?.title}
-              </h1>
-              {form?.description && (
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-[15px]">
-                  {form.description}
-                </p>
-              )}
-            </div>
+        <form onSubmit={handleSubmit} className="px-6 py-8 sm:px-10">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {fields.map((field) => {
+              const isWide =
+                field.type === 'long_text' ||
+                field.type === 'paragraph_text' ||
+                field.type === 'section_title' ||
+                field.type === 'checkbox' ||
+                field.type === 'consent_checkbox';
+
+              return (
+                <div
+                  key={field.id}
+                  className={isWide ? 'md:col-span-2' : 'md:col-span-1'}
+                >
+                  {renderField(field)}
+                </div>
+              );
+            })}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {fields.map((field) => (
-              <div key={field.id} className={cardClass}>
-                {renderField(field)}
-              </div>
-            ))}
-
-            <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {submitting ? 'Submitting...' : 'Submit response'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAnswers({});
-                    const formEl = document.querySelector('form') as HTMLFormElement | null;
-                    formEl?.reset();
-                  }}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-                >
-                  Clear form
-                </button>
-              </div>
-            </div>
-          </form>
-        </main>
+          <div className="mt-8 border-t border-neutral-200 pt-6">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
+              {submitting ? 'Submitting...' : 'Submit Request'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
