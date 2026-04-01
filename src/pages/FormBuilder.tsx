@@ -17,7 +17,10 @@ export default function FormBuilder() {
     slug: uuidv4().substring(0, 8),
     is_open: true,
     is_public: true,
-    success_message: 'Thank you for your submission.'
+    success_message: 'Thank you for your submission.',
+    start_date: '',
+    end_date: '',
+    max_submissions: ''
   });
 
   const [fields, setFields] = useState<any[]>([]);
@@ -39,7 +42,12 @@ export default function FormBuilder() {
         .single();
       
       if (formError) throw formError;
-      setForm(formData);
+      setForm({
+        ...formData,
+        start_date: formData.start_date ? new Date(formData.start_date).toISOString().slice(0, 16) : '',
+        end_date: formData.end_date ? new Date(formData.end_date).toISOString().slice(0, 16) : '',
+        max_submissions: formData.max_submissions || ''
+      });
 
       const { data: fieldsData, error: fieldsError } = await supabase
         .from('form_fields')
@@ -65,13 +73,20 @@ export default function FormBuilder() {
 
       let formId = id;
 
+      const formToSave = {
+        ...form,
+        start_date: form.start_date || null,
+        end_date: form.end_date || null,
+        max_submissions: form.max_submissions ? parseInt(form.max_submissions as string) : null
+      };
+
       if (!id) {
         // Create new form
         const { data, error } = await supabase
           .from('forms')
           .insert({
             user_id: user.id,
-            ...form
+            ...formToSave
           })
           .select()
           .single();
@@ -82,7 +97,7 @@ export default function FormBuilder() {
         // Update existing form
         const { error } = await supabase
           .from('forms')
-          .update(form)
+          .update(formToSave)
           .eq('id', id);
         if (error) throw error;
       }
@@ -372,6 +387,38 @@ export default function FormBuilder() {
                   onChange={(e) => setForm({ ...form, success_message: e.target.value })}
                   className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                <input
+                  type="datetime-local"
+                  value={form.start_date || ''}
+                  onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                  className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">End Date</label>
+                <input
+                  type="datetime-local"
+                  value={form.end_date || ''}
+                  onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                  className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Max Submissions</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.max_submissions || ''}
+                  onChange={(e) => setForm({ ...form, max_submissions: e.target.value })}
+                  className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  placeholder="Unlimited"
                 />
               </div>
             </div>
