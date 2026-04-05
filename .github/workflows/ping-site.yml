@@ -1,0 +1,13 @@
+name: Ping site every 10 min
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping your site
+        run: curl -L --silent --show-error --fail https://form.aerowebai.com
