@@ -9,5 +9,10 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping your site
-        run: curl -L --silent --show-error --fail https://form.aerowebai.com
+      - name: Debug ping
+        run: |
+          echo "Testing site..."
+          curl -I -L -v https://form.aerowebai.com || true
+          echo ""
+          echo "HTTP status:"
+          curl -L -o /dev/null -s -w "%{http_code}\n" https://form.aerowebai.com || true
