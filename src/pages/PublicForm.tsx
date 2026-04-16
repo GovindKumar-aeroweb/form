@@ -64,7 +64,7 @@ export default function PublicForm() {
       if (!field.is_required) continue;
       const value = answers[field.id];
       if (!value || (Array.isArray(value) && value.length === 0)) {
-        throw new Error(`Fill required field: ${field.label}`);
+       throw new Error("Fill required field: " + field.label);
       }
     }
   };
