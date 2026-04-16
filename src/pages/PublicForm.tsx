@@ -98,16 +98,17 @@ export default function PublicForm() {
         value,
       }));
 
-      const response = await fetch("https://waofwhekmpvuhqffoxwb.supabase.co/functions/v1/form", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          answers: formattedAnswers,
-          submitterEmail: emailField ? answers[emailField.id] || null : null,
-        }),
-      });
+   const response = await fetch("https://waofwhekmpvuhqffoxwb.supabase.co/functions/v1/form", {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    formId: form.id, // 🔥 VERY IMPORTANT
+    answers: formattedAnswers,
+    submitterEmail: emailField ? answers[emailField.id] || null : null,
+  }),
+});
 
       const text = await response.text();
       let data: any = {};
