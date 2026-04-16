@@ -98,7 +98,7 @@ export default function PublicForm() {
         value,
       }));
 
-   const response = await fetch("https://waofwhekmpvuhqffoxwb.supabase.co/functions/v1/form", {
+   const response = await fetch("https://waofwhekmpvuhqffoxwb.supabase.co/functions/v1/submit-form", {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
